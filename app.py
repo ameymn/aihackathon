@@ -9,6 +9,10 @@ app = Flask(__name__)
 # Set up your Google Generative AI model
 model = genai.GenerativeModel(model_name='gemini-1.5-pro-latest')
 
+@app.route('/')
+def hello_world():
+    return "Hello World"
+
 @app.route('/extract_text', methods=['POST'])
 def extract_text():
     if 'image' not in request.files:
