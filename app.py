@@ -15,20 +15,33 @@ def hello_world():
 
 @app.route('/extract_text', methods=['POST'])
 def extract_text():
-    if 'image' not in request.files:
-        return jsonify({"error": "No image file provided"}), 400
+    try:
+        if 'image' not in request.files:
+            return jsonify({"error": "No image file provided"}), 400
+        
+        image_file = request.files['image']
+        
+        # Open the image using PIL
+        img = Image.open(image_file)
+        
+        # Use Google Generative AI to extract text
+        prompt = "Give me the text in the image in json format"
+        response = model.generate_content([prompt, img])
+        
+        # Return the extracted text as JSON
+        return jsonify({"extracted_text": response.text})
+    except Exception as e:
+        # Log the full exception traceback
+        app.logger.error(f"An error occurred: {str(e)}\n{traceback.format_exc()}")
+        
+        # Return a detailed error response
+        return jsonify({
+            "error": "An error occurred while processing the request",
+            "details": str(e),
+            "route": "/extract_text",
+            "method": "POST"
+        }), 500
     
-    image_file = request.files['image']
-    
-    # Open the image using PIL
-    img = Image.open(image_file)
-    
-    # Use Google Generative AI to extract text
-    prompt = "Give me the text in the image in json format"
-    response = model.generate_content([prompt, img])
-    
-    # Return the extracted text as JSON
-    return jsonify({"extracted_text": response.text})
 
 if __name__ == '__main__':
     app.run(debug=True)
